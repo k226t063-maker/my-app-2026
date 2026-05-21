@@ -1,0 +1,209 @@
+:root {
+    --bg-color: #f0f2f5;
+    --card-bg: #ffffff;
+    --primary-color: #4a90e2;
+    --secondary-color: #f39c12;
+    --text-color: #333;
+    --border-color: #ddd;
+    --cell-size: 30px;
+    --filled-color: #2c3e50;
+    --x-color: #e74c3c;
+    --clue-bg: #ecf0f1;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 900px;
+    width: 100%;
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    transition: background 0.2s;
+    font-weight: 600;
+}
+
+button:hover {
+    background-color: #d0d0d0;
+}
+
+button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#tool-x.active {
+    background-color: var(--secondary-color);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Game Board Layout */
+#game-container {
+    display: grid;
+    grid-template-columns: auto min-content;
+    grid-template-rows: auto min-content;
+    gap: 2px;
+    margin: 0 auto;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+#clues-top {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    background: var(--clue-bg);
+}
+
+#clues-left {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    background: var(--clue-bg);
+}
+
+#grid-board {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    border: 2px solid var(--filled-color);
+    background-color: white;
+}
+
+/* Clue Styling */
+.clue-col {
+    width: var(--cell-size);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 2px 0;
+    font-size: 11px;
+    border-right: 1px solid var(--border-color);
+    box-sizing: border-box;
+    background: #f8f9fa;
+}
+
+.clue-row {
+    height: var(--cell-size);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 5px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border-color);
+    box-sizing: border-box;
+    white-space: nowrap;
+    background: #f8f9fa;
+}
+
+.clue-col span {
+    height: 14px;
+    line-height: 14px;
+}
+
+.clue-row span {
+    width: 14px;
+    text-align: right;
+    margin-left: 2px;
+}
+
+/* Grid Cell Styling */
+.cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.cell.filled {
+    background-color: var(--filled-color);
+}
+
+.cell.x::after {
+    content: '×';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--x-color);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* 5-cell markers */
+.cell:nth-child(5n):not(:last-child) {
+    border-right: 2px solid #999;
+}
+
+#grid-board div:nth-child(n+1):nth-child(-n+400) {
+    /* Row markers are harder with a single container, will use JS to add classes or adjust grid */
+}
+
+.row-marker {
+    border-bottom: 2px solid #999 !important;
+}
+
+.col-marker {
+    border-right: 2px solid #999 !important;
+}
+
+#message-area {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    min-height: 1.5em;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+    :root {
+        --cell-size: 20px;
+    }
+    .clue-row, .clue-col {
+        font-size: 10px;
+    }
+}
