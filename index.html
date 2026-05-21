@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Picross & Editor</title>
+    <title>Web Picross</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,41 +11,35 @@
         <h1>Web Picross</h1>
         
         <div class="controls">
-            <div class="mode-select">
-                <button id="btn-play" class="active">Play</button>
-                <button id="btn-edit">Editor</button>
-            </div>
-            
             <div class="game-settings">
-                <select id="select-size">
-                    <option value="5">5x5</option>
-                    <option value="10">10x10</option>
-                    <option value="15">15x15</option>
-                    <option value="20" selected>20x20</option>
+                <label for="select-puzzle">パズルを選択:</label>
+                <select id="select-puzzle">
+                    <optgroup label="初級 (5x5)">
+                        <option value="easy-heart">ハート</option>
+                        <option value="easy-duck">アヒル</option>
+                        <option value="easy-note">音符</option>
+                    </optgroup>
+                    <optgroup label="中級 (10x10)">
+                        <option value="normal-house">家</option>
+                        <option value="normal-mushroom">キノコ</option>
+                        <option value="normal-dog">イヌ</option>
+                    </optgroup>
+                    <optgroup label="上級 (15x15)">
+                        <option value="hard-rocket">ロケット</option>
+                        <option value="hard-tree">大きな木</option>
+                    </optgroup>
                 </select>
-                <select id="select-preset">
-                    <option value="">-- Presets --</option>
-                    <option value="Heart">Heart (5x5)</option>
-                    <option value="Smile">Smile (5x5)</option>
-                </select>
-                <button id="btn-new-game">New Game</button>
-                <button id="btn-clear">Clear</button>
+                <button id="btn-start">スタート</button>
             </div>
 
             <div class="play-tools">
                 <button id="tool-fill" class="active">塗り (Click)</button>
                 <button id="tool-x">× (Mark)</button>
-                <button id="btn-reset">Reset</button>
-            </div>
-
-            <div class="editor-tools hidden">
-                <button id="btn-share">Share URL</button>
-                <p class="hint">エディタモード: 正解パターンを塗ってください</p>
+                <button id="btn-reset">最初から</button>
             </div>
         </div>
 
         <div id="game-container">
-            <!-- Grid will be generated here -->
             <div id="clues-top"></div>
             <div id="clues-left"></div>
             <div id="grid-board"></div>

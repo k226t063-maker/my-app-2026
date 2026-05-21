@@ -1,16 +1,116 @@
+const PUZZLE_LIBRARY = {
+    "easy-heart": {
+        size: 5,
+        data: [
+            [0, 1, 0, 1, 0],
+            [1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0],
+            [0, 0, 1, 0, 0]
+        ]
+    },
+    "easy-duck": {
+        size: 5,
+        data: [
+            [0, 1, 1, 0, 0],
+            [1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1],
+            [0, 0, 1, 1, 0]
+        ]
+    },
+    "easy-note": {
+        size: 5,
+        data: [
+            [0, 0, 1, 1, 0],
+            [0, 0, 1, 0, 1],
+            [0, 0, 1, 0, 0],
+            [0, 1, 1, 0, 0],
+            [0, 1, 1, 0, 0]
+        ]
+    },
+    "normal-house": {
+        size: 10,
+        data: [
+            [0,0,0,0,1,1,0,0,0,0],
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,1,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,0,0,1,1],
+            [1,1,0,1,1,1,1,0,1,1],
+            [1,1,0,1,0,0,1,0,1,1],
+            [1,1,0,1,1,1,1,0,1,1],
+            [1,1,1,1,1,1,1,1,1,1]
+        ]
+    },
+    "normal-mushroom": {
+        size: 10,
+        data: [
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,1,1,1,1,1,1,0,0],
+            [0,1,1,0,0,1,1,1,1,0],
+            [1,1,1,0,0,1,1,0,0,1],
+            [1,1,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,1,1,1],
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,0,1,1,1,1,0,0,0],
+            [0,0,1,1,1,1,1,1,0,0]
+        ]
+    },
+    "normal-dog": {
+        size: 10,
+        data: [
+            [0,0,1,1,1,1,1,0,0,0],
+            [0,1,1,1,1,1,1,1,0,0],
+            [0,1,1,0,1,1,1,1,0,0],
+            [1,1,1,1,1,1,1,1,1,0],
+            [1,1,1,1,1,1,1,1,1,1],
+            [0,1,1,1,1,1,1,1,1,0],
+            [0,0,1,1,1,1,1,1,0,0],
+            [0,0,0,1,1,0,1,1,0,0],
+            [0,0,1,1,0,0,1,1,0,0],
+            [0,0,1,1,0,0,1,1,0,0]
+        ]
+    },
+    "hard-rocket": {
+        size: 15,
+        data: Array(15).fill().map((_, r) => Array(15).fill().map((_, c) => {
+            // Rocket shape logic
+            if (c === 7) return 1; // Center axis
+            if (r >= 2 && r <= 10 && Math.abs(c - 7) <= (r < 5 ? r - 2 : 2)) return 1; // Body
+            if (r >= 11 && r <= 12 && Math.abs(c - 7) <= 4) return 1; // Fins
+            if (r === 13 && Math.abs(c - 7) <= 1) return 1; // Flame
+            if (r === 14 && c === 7) return 1; // Flame tip
+            return 0;
+        }))
+    },
+    "hard-tree": {
+        size: 15,
+        data: Array(15).fill().map((_, r) => Array(15).fill().map((_, c) => {
+            // Tree shape logic
+            if (r < 10 && Math.abs(c - 7) <= r) return 1; // Leaves
+            if (r >= 10 && r < 14 && Math.abs(c - 7) <= 1) return 1; // Trunk
+            if (r === 14 && Math.abs(c - 7) <= 3) return 1; // Ground
+            return 0;
+        }))
+    }
+};
+
 class PicrossGame {
     constructor() {
-        this.size = 20;
+        this.size = 5;
         this.solution = [];
         this.board = []; // 0: empty, 1: filled, 2: x
-        this.isEditMode = false;
         this.currentTool = 'fill'; // 'fill' or 'x'
         this.isDragging = false;
         this.dragState = null;
+        this.isCleared = false;
 
         this.initElements();
         this.addEventListeners();
-        this.loadFromUrl() || this.createNewGame(20);
+        this.loadPuzzle("easy-heart");
     }
 
     initElements() {
@@ -18,66 +118,29 @@ class PicrossGame {
         this.cluesTop = document.getElementById('clues-top');
         this.cluesLeft = document.getElementById('clues-left');
         this.messageArea = document.getElementById('message-area');
-        this.btnPlay = document.getElementById('btn-play');
-        this.btnEdit = document.getElementById('btn-edit');
-        this.selectSize = document.getElementById('select-size');
-        this.btnNewGame = document.getElementById('btn-new-game');
+        this.selectPuzzle = document.getElementById('select-puzzle');
+        this.btnStart = document.getElementById('btn-start');
         this.toolFill = document.getElementById('tool-fill');
         this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
-        this.btnShare = document.getElementById('btn-share');
-        this.selectPreset = document.getElementById('select-preset');
-        this.btnClear = document.getElementById('btn-clear');
     }
 
     addEventListeners() {
-        this.btnPlay.addEventListener('click', () => this.setMode(false));
-        this.btnEdit.addEventListener('click', () => this.setMode(true));
-        this.btnNewGame.addEventListener('click', () => {
-            const presetVal = this.selectPreset.value;
-            if (presetVal) {
-                const preset = this.getPresets()[presetVal];
-                this.loadData(preset.data, preset.size);
-            } else {
-                const size = parseInt(this.selectSize.value);
-                this.createNewGame(size);
-            }
+        this.btnStart.addEventListener('click', () => {
+            this.loadPuzzle(this.selectPuzzle.value);
         });
-        this.btnClear.addEventListener('click', () => this.resetBoard());
         this.toolFill.addEventListener('click', () => this.setTool('fill'));
         this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
-        this.btnShare.addEventListener('click', () => this.shareLevel());
 
-        // Mouse events for drawing
         window.addEventListener('mouseup', () => {
             this.isDragging = false;
             this.dragState = null;
         });
 
-        // Prevent context menu on grid for right-click marks
         this.gridBoard.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
-    }
-
-    setMode(isEdit) {
-        this.isEditMode = isEdit;
-        this.btnPlay.classList.toggle('active', !isEdit);
-        this.btnEdit.classList.toggle('active', isEdit);
-        this.playTools.classList.toggle('hidden', isEdit);
-        this.editorTools.classList.toggle('hidden', !isEdit);
-        
-        if (isEdit) {
-            this.messageArea.textContent = "エディタモード: 正解パターンを作成中...";
-            // In edit mode, we use 'solution' as the board
-            this.board = this.solution.map(row => [...row]);
-        } else {
-            this.solution = this.board.map(row => [...row]);
-            this.resetBoard();
-            this.messageArea.textContent = "プレイ開始！";
-        }
-        this.render();
     }
 
     setTool(tool) {
@@ -86,15 +149,20 @@ class PicrossGame {
         this.toolX.classList.toggle('active', tool === 'x');
     }
 
-    createNewGame(size) {
-        this.size = size;
-        this.solution = Array(size).fill().map(() => Array(size).fill(0));
-        this.board = Array(size).fill().map(() => Array(size).fill(0));
-        this.render();
+    loadPuzzle(id) {
+        const puzzle = PUZZLE_LIBRARY[id];
+        if (!puzzle) return;
+
+        this.size = puzzle.size;
+        this.solution = puzzle.data;
+        this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
+        this.isCleared = false;
         this.messageArea.textContent = "";
+        this.render();
     }
 
     resetBoard() {
+        if (this.isCleared) return;
         this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
         this.render();
         this.messageArea.textContent = "";
@@ -116,16 +184,14 @@ class PicrossGame {
     }
 
     render() {
-        // Clear elements
         this.gridBoard.innerHTML = '';
         this.cluesTop.innerHTML = '';
         this.cluesLeft.innerHTML = '';
 
-        // Grid setup
         this.gridBoard.style.gridTemplateColumns = `repeat(${this.size}, var(--cell-size))`;
         this.gridBoard.style.gridTemplateRows = `repeat(${this.size}, var(--cell-size))`;
 
-        // Render Top Clues
+        // Top Clues
         for (let c = 0; c < this.size; c++) {
             const col = [];
             for (let r = 0; r < this.size; r++) col.push(this.solution[r][c]);
@@ -142,9 +208,8 @@ class PicrossGame {
             this.cluesTop.appendChild(clueEl);
         }
 
-        // Render Left Clues & Grid
+        // Left Clues & Grid
         for (let r = 0; r < this.size; r++) {
-            // Clues
             const clues = this.calculateClues(this.solution[r]);
             const clueEl = document.createElement('div');
             clueEl.className = 'clue-row';
@@ -156,14 +221,12 @@ class PicrossGame {
             });
             this.cluesLeft.appendChild(clueEl);
 
-            // Row of cells
             for (let c = 0; c < this.size; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 if (this.board[r][c] === 1) cell.classList.add('filled');
                 if (this.board[r][c] === 2) cell.classList.add('x');
                 
-                // Markers
                 if ((c + 1) % 5 === 0 && c !== this.size - 1) cell.classList.add('col-marker');
                 if ((r + 1) % 5 === 0 && r !== this.size - 1) cell.classList.add('row-marker');
 
@@ -176,19 +239,15 @@ class PicrossGame {
     }
 
     handleCellClick(r, c, e) {
+        if (this.isCleared) return;
         this.isDragging = true;
         let targetState;
 
-        if (this.isEditMode) {
-            targetState = this.board[r][c] === 1 ? 0 : 1;
+        if (e.button === 2) { // Right click
+            targetState = this.board[r][c] === 2 ? 0 : 2;
         } else {
-            // In play mode, tool selection or right click
-            if (e.button === 2) { // Right click
-                targetState = this.board[r][c] === 2 ? 0 : 2;
-            } else {
-                const tool = this.currentTool === 'fill' ? 1 : 2;
-                targetState = this.board[r][c] === tool ? 0 : tool;
-            }
+            const tool = this.currentTool === 'fill' ? 1 : 2;
+            targetState = this.board[r][c] === tool ? 0 : tool;
         }
 
         this.dragState = targetState;
@@ -196,6 +255,7 @@ class PicrossGame {
     }
 
     handleCellEnter(r, c) {
+        if (this.isCleared) return;
         if (this.isDragging && this.dragState !== null) {
             this.updateCell(r, c, this.dragState);
         }
@@ -205,30 +265,12 @@ class PicrossGame {
         if (this.board[r][c] === state) return;
         this.board[r][c] = state;
         
-        if (this.isEditMode) {
-            this.solution[r][c] = state;
-            this.render(); // Need full render to update clues
-        } else {
-            // Optimization: Only update the specific cell's class
-            const cellIdx = r * this.size + c;
-            const cellEl = this.gridBoard.children[cellIdx];
-            cellEl.classList.toggle('filled', state === 1);
-            cellEl.classList.toggle('x', state === 2);
-            this.checkWin();
-        }
-    }
-
-    getPresets() {
-        return {
-            "Heart": {
-                size: 5,
-                data: "CBI=" // 01010 11111 11111 01110 00100 -> bitstring -> base64
-            },
-            "Smile": {
-                size: 5,
-                data: "EBEA" // 01010 01010 00000 10001 01110 -> 01010010 10000010 00101110 -> base64
-            }
-        };
+        const cellIdx = r * this.size + c;
+        const cellEl = this.gridBoard.children[cellIdx];
+        cellEl.classList.toggle('filled', state === 1);
+        cellEl.classList.toggle('x', state === 2);
+        
+        this.checkWin();
     }
 
     checkWin() {
@@ -239,77 +281,14 @@ class PicrossGame {
                 if (isSolutionFilled !== isBoardFilled) return;
             }
         }
+        this.isCleared = true;
         this.messageArea.textContent = "🎉 クリア！！ おめでとうございます！";
-    }
-
-    shareLevel() {
-        const data = this.encodeGrid();
-        const url = new URL(window.location);
-        url.searchParams.set('p', data);
-        url.searchParams.set('s', this.size);
         
-        // Copy to clipboard
-        navigator.clipboard.writeText(url.toString()).then(() => {
-            alert("URLをコピーしました！このURLを共有するとパズルを遊べます。");
-            window.history.pushState({}, '', url);
-        });
-    }
-
-    encodeGrid() {
-        // Convert grid to a bit-string then to base64
-        let bits = "";
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                bits += this.solution[r][c] === 1 ? "1" : "0";
-            }
-        }
-        
-        // Pad to byte
-        while (bits.length % 8 !== 0) bits += "0";
-        
-        let bytes = [];
-        for (let i = 0; i < bits.length; i += 8) {
-            bytes.push(parseInt(bits.substr(i, 8), 2));
-        }
-        
-        return btoa(String.fromCharCode.apply(null, bytes));
-    }
-
-    loadData(p, s) {
-        this.size = parseInt(s);
-        const binaryString = atob(p);
-        let bits = "";
-        for (let i = 0; i < binaryString.length; i++) {
-            bits += binaryString.charCodeAt(i).toString(2).padStart(8, '0');
-        }
-
-        this.solution = Array(this.size).fill().map(() => Array(this.size).fill(0));
-        this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
-
-        let bitIdx = 0;
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                this.solution[r][c] = bits[bitIdx++] === "1" ? 1 : 0;
-            }
-        }
-
-        this.render();
-        this.selectSize.value = this.size;
-        this.messageArea.textContent = "パズルを読み込みました！";
-    }
-
-    loadFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const p = params.get('p');
-        const s = params.get('s');
-        if (!p || !s) return false;
-
-        this.loadData(p, s);
-        return true;
+        // Final polish: mark all empty cells with X or just clear them
+        // (Optional: can add effect here)
     }
 }
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     window.game = new PicrossGame();
 });

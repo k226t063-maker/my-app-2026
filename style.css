@@ -8,7 +8,7 @@
     --cell-size: 30px;
     --filled-color: #2c3e50;
     --x-color: #e74c3c;
-    --clue-bg: #ecf0f1;
+    --clue-bg: #f8f9fa;
 }
 
 body {
@@ -33,18 +33,33 @@ body {
 h1 {
     text-align: center;
     margin-bottom: 20px;
+    color: var(--primary-color);
 }
 
 .controls {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
     padding: 15px;
     background: #f8f9fa;
     border-radius: 6px;
-    justify-content: center;
     align-items: center;
+}
+
+.game-settings, .play-tools {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: white;
 }
 
 button {
@@ -70,8 +85,9 @@ button.active {
     background-color: var(--secondary-color);
 }
 
-.hidden {
-    display: none !important;
+#btn-start {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* Game Board Layout */
@@ -119,7 +135,7 @@ button.active {
     font-size: 11px;
     border-right: 1px solid var(--border-color);
     box-sizing: border-box;
-    background: #f8f9fa;
+    background: var(--clue-bg);
 }
 
 .clue-row {
@@ -132,7 +148,7 @@ button.active {
     border-bottom: 1px solid var(--border-color);
     box-sizing: border-box;
     white-space: nowrap;
-    background: #f8f9fa;
+    background: var(--clue-bg);
 }
 
 .clue-col span {
@@ -172,21 +188,13 @@ button.active {
     font-weight: bold;
 }
 
-/* 5-cell markers */
-.cell:nth-child(5n):not(:last-child) {
-    border-right: 2px solid #999;
-}
-
-#grid-board div:nth-child(n+1):nth-child(-n+400) {
-    /* Row markers are harder with a single container, will use JS to add classes or adjust grid */
-}
-
-.row-marker {
-    border-bottom: 2px solid #999 !important;
-}
-
-.col-marker {
+/* Markers */
+.cell.col-marker, .clue-col.col-marker {
     border-right: 2px solid #999 !important;
+}
+
+.cell.row-marker, .clue-row.row-marker {
+    border-bottom: 2px solid #999 !important;
 }
 
 #message-area {
@@ -205,5 +213,8 @@ button.active {
     }
     .clue-row, .clue-col {
         font-size: 10px;
+    }
+    .cell.x::after {
+        font-size: 14px;
     }
 }
