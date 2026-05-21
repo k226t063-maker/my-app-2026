@@ -107,9 +107,12 @@ class PicrossGame {
         this.isDragging = false;
         this.dragState = null;
         this.isCleared = false;
+        this.startTime = null;
+        this.timerInterval = null;
 
         this.initElements();
         this.addEventListeners();
+        this.initConfetti();
         this.loadPuzzle("easy-heart");
     }
 
@@ -123,6 +126,11 @@ class PicrossGame {
         this.toolFill = document.getElementById('tool-fill');
         this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
+        
+        // Victory elements
+        this.victoryOverlay = document.getElementById('victory-overlay');
+        this.btnNextPuzzle = document.getElementById('btn-next-puzzle');
+        this.finishTimeEl = document.getElementById('finish-time');
     }
 
     addEventListeners() {
@@ -132,6 +140,10 @@ class PicrossGame {
         this.toolFill.addEventListener('click', () => this.setTool('fill'));
         this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
+
+        this.btnNextPuzzle.addEventListener('click', () => {
+            this.loadNextPuzzle();
+        });
 
         window.addEventListener('mouseup', () => {
             this.isDragging = false;
@@ -143,10 +155,70 @@ class PicrossGame {
         });
     }
 
-    setTool(tool) {
-        this.currentTool = tool;
-        this.toolFill.classList.toggle('active', tool === 'fill');
-        this.toolX.classList.toggle('active', tool === 'x');
+    initConfetti() {
+        this.confettiCanvas = document.getElementById('confetti-canvas');
+        this.ctx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+        this.isConfettiRunning = false;
+        
+        window.addEventListener('resize', () => {
+            if (this.isCleared) {
+                this.confettiCanvas.width = window.innerWidth;
+                this.confettiCanvas.height = window.innerHeight;
+            }
+        });
+    }
+
+    startConfetti() {
+        this.confettiCanvas.width = window.innerWidth;
+        this.confettiCanvas.height = window.innerHeight;
+        this.confettiParticles = [];
+        this.isConfettiRunning = true;
+        
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+        
+        for (let i = 0; i < 150; i++) {
+            this.confettiParticles.push({
+                x: Math.random() * this.confettiCanvas.width,
+                y: Math.random() * this.confettiCanvas.height - this.confettiCanvas.height,
+                size: Math.random() * 10 + 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 3 + 2,
+                angle: Math.random() * 6.28,
+                rotation: Math.random() * 0.2 - 0.1
+            });
+        }
+        
+        this.animateConfetti();
+    }
+
+    animateConfetti() {
+        if (!this.isConfettiRunning) return;
+        
+        this.ctx.clearRect(0, 0, this.confettiCanvas.width, this.confettiCanvas.height);
+        
+        this.confettiParticles.forEach(p => {
+            p.y += p.speed;
+            p.angle += p.rotation;
+            
+            if (p.y > this.confettiCanvas.height) {
+                p.y = -20;
+                p.x = Math.random() * this.confettiCanvas.width;
+            }
+            
+            this.ctx.save();
+            this.ctx.translate(p.x, p.y);
+            this.ctx.rotate(p.angle);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            this.ctx.restore();
+        });
+        
+        requestAnimationFrame(() => this.animateConfetti());
+    }
+
+    stopConfetti() {
+        this.isConfettiRunning = false;
     }
 
     loadPuzzle(id) {
@@ -158,14 +230,43 @@ class PicrossGame {
         this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
         this.isCleared = false;
         this.messageArea.textContent = "";
+        
+        // Reset victory overlay
+        this.victoryOverlay.classList.remove('show');
+        setTimeout(() => this.victoryOverlay.classList.add('hidden'), 500);
+        this.stopConfetti();
+
+        // Set select value in case it was loaded programmatically
+        this.selectPuzzle.value = id;
+
+        // Start timer
+        this.startTime = Date.now();
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.updateTimerDisplay(); // Initial call
+        this.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
+
         this.render();
+    }
+
+    updateTimerDisplay() {
+        if (this.isCleared) return;
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        this.messageArea.textContent = `Time: ${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    loadNextPuzzle() {
+        const options = Array.from(this.selectPuzzle.options);
+        const currentIndex = options.findIndex(opt => opt.value === this.selectPuzzle.value);
+        const nextIndex = (currentIndex + 1) % options.length;
+        this.loadPuzzle(options[nextIndex].value);
     }
 
     resetBoard() {
         if (this.isCleared) return;
         this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
         this.render();
-        this.messageArea.textContent = "";
     }
 
     calculateClues(arr) {
@@ -281,11 +382,38 @@ class PicrossGame {
                 if (isSolutionFilled !== isBoardFilled) return;
             }
         }
-        this.isCleared = true;
-        this.messageArea.textContent = "🎉 クリア！！ おめでとうございます！";
         
-        // Final polish: mark all empty cells with X or just clear them
-        // (Optional: can add effect here)
+        this.isCleared = true;
+        if (this.timerInterval) clearInterval(this.timerInterval);
+
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        const timeStr = `${mins}分 ${secs}秒`;
+        
+        this.finishTimeEl.textContent = `クリアタイム: ${timeStr}`;
+        this.messageArea.textContent = "🎉 クリア！！";
+
+        // Add cleared class to cells for animation
+        const cells = this.gridBoard.children;
+        for (let i = 0; i < cells.length; i++) {
+            const r = Math.floor(i / this.size);
+            const c = i % this.size;
+            if (this.solution[r][c] === 1) {
+                cells[i].classList.add('cleared');
+            } else {
+                cells[i].classList.add('x'); // Auto-fill empty cells with X
+            }
+        }
+
+        // Show spectacular victory overlay
+        setTimeout(() => {
+            this.victoryOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                this.victoryOverlay.classList.add('show');
+                this.startConfetti();
+            }, 10);
+        }, 800);
     }
 }
 

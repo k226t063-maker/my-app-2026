@@ -206,6 +206,111 @@ button.active {
     min-height: 1.5em;
 }
 
+/* Victory Overlay */
+#victory-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+#victory-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#victory-overlay.hidden {
+    display: none;
+}
+
+.victory-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1001;
+    transform: scale(0.5);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+#victory-overlay.show .victory-content {
+    transform: scale(1);
+}
+
+.victory-title {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin: 0 0 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    animation: rainbow 3s linear infinite;
+}
+
+.victory-message {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+#btn-next-puzzle {
+    background: linear-gradient(135deg, var(--primary-color), #67b26f);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#btn-next-puzzle:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+#confetti-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Animations */
+@keyframes rainbow {
+    0% { color: #ff0000; }
+    20% { color: #ffff00; }
+    40% { color: #00ff00; }
+    60% { color: #00ffff; }
+    80% { color: #0000ff; }
+    100% { color: #ff00ff; }
+}
+
+@keyframes pulse-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); background-color: #4a90e2; }
+    100% { transform: scale(1); }
+}
+
+.cell.cleared {
+    animation: pulse-success 0.5s ease-in-out;
+    background-color: var(--primary-color) !important;
+    border-color: rgba(255,255,255,0.3);
+}
+
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     :root {
@@ -217,4 +322,12 @@ button.active {
     .cell.x::after {
         font-size: 14px;
     }
+    .victory-title {
+        font-size: 2rem;
+    }
+    .victory-content {
+        padding: 20px;
+        width: 80%;
+    }
 }
+
