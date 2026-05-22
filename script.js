@@ -101,8 +101,8 @@ class PicrossGame {
         this.size = 5;
         this.solution = [];
         this.board = []; // 0: empty, 1: filled, 2: x
-        this.currentTool = 'fill'; // 'fill' or 'x'
         this.isDragging = false;
+        this.dragButton = null; // 0: left, 2: right
         this.dragState = null;
         this.isCleared = false;
         this.startTime = null;
@@ -132,8 +132,6 @@ class PicrossGame {
         this.messageArea = document.getElementById('message-area');
         this.selectDifficulty = document.getElementById('select-difficulty');
         this.btnRandom = document.getElementById('btn-random');
-        this.toolFill = document.getElementById('tool-fill');
-        this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
         
         // Items
@@ -158,8 +156,6 @@ class PicrossGame {
         this.btnRandom.addEventListener('click', () => {
             this.loadRandomPuzzle(this.selectDifficulty.value);
         });
-        this.toolFill.addEventListener('click', () => this.setTool('fill'));
-        this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
 
         this.btnStraightPunch.addEventListener('click', () => {
@@ -172,6 +168,7 @@ class PicrossGame {
 
         window.addEventListener('mouseup', () => {
             this.isDragging = false;
+            this.dragButton = null;
             this.dragState = null;
         });
 
@@ -233,12 +230,6 @@ class PicrossGame {
         this.items.straightPunch--;
         this.updateItemDisplay();
         this.messageArea.textContent = "🥊 ストレートパンチ！";
-    }
-
-    setTool(tool) {
-        this.currentTool = tool;
-        this.toolFill.classList.toggle('active', tool === 'fill');
-        this.toolX.classList.toggle('active', tool === 'x');
     }
 
     initConfetti() {
@@ -343,7 +334,6 @@ class PicrossGame {
 
         this.startTime = Date.now();
         if (this.timerInterval) clearInterval(this.timerInterval);
-        // We don't call updateTimerDisplay immediately to keep the "New/Cleared" message for a moment
         this.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
 
         this.render();
@@ -424,19 +414,26 @@ class PicrossGame {
     handleCellClick(r, c, e) {
         if (this.isCleared) return;
         this.isDragging = true;
+        this.dragButton = e.button;
+        
         let targetState;
-        if (e.button === 2) targetState = this.board[r][c] === 2 ? 0 : 2;
-        else {
-            const tool = this.currentTool === 'fill' ? 1 : 2;
-            targetState = this.board[r][c] === tool ? 0 : tool;
+        if (e.button === 0) { // Left click
+            targetState = this.board[r][c] === 1 ? 0 : 1;
+        } else if (e.button === 2) { // Right click
+            targetState = this.board[r][c] === 2 ? 0 : 2;
+        } else {
+            return;
         }
+        
         this.dragState = targetState;
         this.updateCell(r, c, targetState);
     }
 
     handleCellEnter(r, c) {
         if (this.isCleared) return;
-        if (this.isDragging && this.dragState !== null) this.updateCell(r, c, this.dragState);
+        if (this.isDragging && this.dragState !== null) {
+            this.updateCell(r, c, this.dragState);
+        }
     }
 
     updateCell(r, c, state) {
