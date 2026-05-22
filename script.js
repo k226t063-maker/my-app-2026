@@ -117,12 +117,34 @@ class PicrossGame {
             straightPunch: 3 // Initial bonus
         };
 
+        // Audio
+        this.initAudio();
+
         this.initElements();
         this.addEventListeners();
         this.initConfetti();
         this.updateItemDisplay();
         this.updateProgressDisplay();
         this.loadRandomPuzzle("all");
+    }
+
+    initAudio() {
+        // NOTE: The blob URL provided is local to the user's session and may not work directly here.
+        // It's recommended to replace these with permanent public URLs.
+        this.bgmUrl = 'blob:https://www.microsoft365.com/8794f7d6-183b-401a-b288-2edef47cf12f';
+        this.punchSeUrl = 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'; // Generic punch sound
+        
+        this.bgm = new Audio(this.bgmUrl);
+        this.bgm.loop = true;
+        this.bgm.volume = 0.4;
+        
+        this.punchSe = new Audio(this.punchSeUrl);
+        this.punchSe.volume = 0.6;
+
+        this.audioEnabled = {
+            bgm: false,
+            se: true
+        };
     }
 
     initElements() {
@@ -136,6 +158,10 @@ class PicrossGame {
         this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
         
+        // Sound controls
+        this.checkBgm = document.getElementById('check-bgm');
+        this.checkSe = document.getElementById('check-se');
+
         // Items
         this.btnStraightPunch = document.getElementById('btn-straight-punch');
         this.itemCountEl = document.getElementById('item-count');
@@ -153,10 +179,24 @@ class PicrossGame {
     addEventListeners() {
         this.btnRandom.addEventListener('click', () => {
             this.loadRandomPuzzle(this.selectDifficulty.value);
+            this.handleFirstInteraction();
         });
         this.toolFill.addEventListener('click', () => this.setTool('fill'));
         this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
+
+        this.checkBgm.addEventListener('change', (e) => {
+            this.audioEnabled.bgm = e.target.checked;
+            if (this.audioEnabled.bgm) {
+                this.bgm.play().catch(err => console.log("BGM play failed:", err));
+            } else {
+                this.bgm.pause();
+            }
+        });
+
+        this.checkSe.addEventListener('change', (e) => {
+            this.audioEnabled.se = e.target.checked;
+        });
 
         this.btnStraightPunch.addEventListener('click', () => {
             this.useStraightPunch();
@@ -176,6 +216,13 @@ class PicrossGame {
         });
     }
 
+    handleFirstInteraction() {
+        // Browsers block auto-playing audio until user interacts
+        if (this.audioEnabled.bgm && this.bgm.paused) {
+            this.bgm.play().catch(() => {});
+        }
+    }
+
     updateItemDisplay() {
         this.itemCountEl.textContent = this.items.straightPunch;
         this.btnStraightPunch.disabled = this.items.straightPunch <= 0 || this.isCleared;
@@ -188,6 +235,12 @@ class PicrossGame {
 
     useStraightPunch() {
         if (this.items.straightPunch <= 0 || this.isCleared) return;
+
+        // Play SE
+        if (this.audioEnabled.se) {
+            this.punchSe.currentTime = 0;
+            this.punchSe.play().catch(() => {});
+        }
 
         const incompleteCols = [];
         for (let c = 0; c < this.size; c++) {
