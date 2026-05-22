@@ -379,7 +379,7 @@ class PicrossGame {
     checkWin() {
         for (let r = 0; r < this.size; r++) for (let c = 0; c < this.size; c++) if ((this.solution[r][c] === 1) !== (this.board[r][c] === 1)) return;
         this.isCleared = true; if (this.timerInterval) clearInterval(this.timerInterval);
-        let reward = this.currentPuzzleId.startsWith('boss') ? 500 : (this.currentPuzzleId.startsWith('hard') ? 100 : (this.currentPuzzleId.startsWith('normal') ? 30 : 10));
+        let reward = this.currentPuzzleId.startsWith('boss') ? 200 : (this.currentPuzzleId.startsWith('hard') ? 100 : (this.currentPuzzleId.startsWith('normal') ? 30 : 10));
         if (!this.clearedPuzzles.includes(this.currentPuzzleId)) {
             this.clearedPuzzles.push(this.currentPuzzleId); this.coins += reward;
             localStorage.setItem('picross_cleared', JSON.stringify(this.clearedPuzzles));
