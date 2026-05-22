@@ -451,7 +451,6 @@ body.theme-midnight .coin-display {
     margin: 5px 0 0 0;
 }
 
-/* Victory Overlay */
 #victory-overlay {
     position: fixed;
     top: 0;
@@ -462,7 +461,7 @@ body.theme-midnight .coin-display {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 5000;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.5s, visibility 0.5s;
@@ -484,7 +483,7 @@ body.theme-midnight .coin-display {
     border-radius: 20px;
     text-align: center;
     position: relative;
-    z-index: 1001;
+    z-index: 5002;
     transform: scale(0.5);
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
@@ -514,6 +513,12 @@ body.theme-midnight .coin-display {
     background: var(--clue-bg);
     border-radius: 12px;
     border: 2px dashed var(--primary-color);
+    position: relative;
+    z-index: 5003;
+}
+
+.reward-area.hidden {
+    display: none;
 }
 
 .reward-prompt {
@@ -538,6 +543,8 @@ body.theme-midnight .coin-display {
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
+    z-index: 5004;
 }
 
 .reward-btn:hover {
@@ -562,6 +569,12 @@ body.theme-midnight .coin-display {
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    z-index: 5003;
+}
+
+#btn-next-puzzle.hidden {
+    display: none;
 }
 
 #btn-next-puzzle:hover {
@@ -570,13 +583,13 @@ body.theme-midnight .coin-display {
 }
 
 #confetti-canvas {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 5001;
 }
 
 /* Animations */

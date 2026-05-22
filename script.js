@@ -95,6 +95,16 @@ class PicrossGame {
         this.loadRandomPuzzle("all");
     }
 
+    claimReward(itemType) {
+        if (!this.isCleared) return;
+        this.items[itemType]++;
+        this.saveItems();
+        this.updateItemDisplay();
+        this.rewardArea.classList.add('hidden');
+        this.btnNextPuzzle.classList.remove('hidden');
+        this.messageArea.textContent = `🎁 ${itemType === 'straightPunch' ? 'ストレートパンチ' : 'スプラッシュパンチ'}をゲット！`;
+    }
+
     initElements() {
         this.gridBoard = document.getElementById('grid-board');
         this.cluesTop = document.getElementById('clues-top');
@@ -282,15 +292,6 @@ class PicrossGame {
         this.saveItems();
         this.updateItemDisplay();
         this.messageArea.textContent = "💦 スプラッシュパンチ！";
-    }
-
-    claimReward(itemType) {
-        this.items[itemType]++;
-        this.saveItems();
-        this.updateItemDisplay();
-        this.rewardArea.classList.add('hidden');
-        this.btnNextPuzzle.classList.remove('hidden');
-        this.messageArea.textContent = `🎁 ${itemType === 'straightPunch' ? 'ストレートパンチ' : 'スプラッシュパンチ'}をゲット！`;
     }
 
     initConfetti() {
