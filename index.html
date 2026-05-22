@@ -20,28 +20,11 @@
                         <option value="normal">中級 (10x10)</option>
                         <option value="hard">上級 (15x15)</option>
                     </select>
-                    <button id="btn-random">ランダムに開始</button>
+                    <button id="btn-random">開始 / 次の問題</button>
                 </div>
                 
-                <div class="setting-item">
-                    <label for="select-puzzle">パズルを選択:</label>
-                    <select id="select-puzzle">
-                        <optgroup label="初級 (5x5)">
-                            <option value="easy-heart">ハート</option>
-                            <option value="easy-duck">アヒル</option>
-                            <option value="easy-note">音符</option>
-                        </optgroup>
-                        <optgroup label="中級 (10x10)">
-                            <option value="normal-house">家</option>
-                            <option value="normal-mushroom">キノコ</option>
-                            <option value="normal-dog">イヌ</option>
-                        </optgroup>
-                        <optgroup label="上級 (15x15)">
-                            <option value="hard-rocket">ロケット</option>
-                            <option value="hard-tree">大きな木</option>
-                        </optgroup>
-                    </select>
-                    <button id="btn-start">スタート</button>
+                <div class="progress-area">
+                    <span class="progress-text">クリア状況: <span id="cleared-count">0</span> / <span id="total-count">0</span></span>
                 </div>
             </div>
 

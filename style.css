@@ -206,6 +206,26 @@ button.active {
     border-bottom: 2px solid #999 !important;
 }
 
+.progress-area {
+    background: #e9ecef;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #495057;
+    margin-top: 5px;
+}
+
+.progress-text {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#cleared-count {
+    color: var(--primary-color);
+}
+
 .item-area {
     margin-top: 10px;
     padding-top: 10px;
