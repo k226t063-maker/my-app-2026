@@ -19,11 +19,20 @@
                         <option value="easy">初級 (5x5)</option>
                         <option value="normal">中級 (10x10)</option>
                         <option value="hard">上級 (15x15)</option>
+                        <option value="boss" id="opt-boss" disabled>？？？ (20x20)</option>
                     </select>
                     <button id="btn-random">開始 / 次の問題</button>
+                    <button id="btn-open-shop" class="secondary-btn">🎨 デザインショップ</button>
                 </div>
                 
                 <div class="progress-area">
+                    <div class="coin-display">
+                        <span class="coin-icon">💰</span> <span id="coin-count">0</span> コイン
+                    </div>
+                    <div class="progress-row" id="progress-boss-row" style="display: none;">
+                        <span class="progress-label boss-text">魔王:</span>
+                        <span class="progress-val"><span id="cleared-boss">0</span> / <span id="total-boss">0</span></span>
+                    </div>
                     <div class="progress-row">
                         <span class="progress-label">初級:</span>
                         <span class="progress-val"><span id="cleared-easy">0</span> / <span id="total-easy">0</span></span>
@@ -71,6 +80,17 @@
             <button id="btn-next-puzzle">次のパズルへ</button>
         </div>
         <canvas id="confetti-canvas"></canvas>
+    </div>
+
+    <div id="shop-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>🎨 デザインショップ</h3>
+            <p>獲得したコインで新しいデザインを解放しよう！</p>
+            <div id="theme-list" class="theme-list">
+                <!-- Themes will be generated here -->
+            </div>
+            <button id="btn-close-shop" class="close-btn">閉じる</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
