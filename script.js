@@ -82,9 +82,8 @@ class PicrossGame {
         this.currentThemeId = localStorage.getItem('picross_current_theme') || 'default';
         
         // Items
-        this.items = {
-            straightPunch: 3
-        };
+        const savedItems = JSON.parse(localStorage.getItem('picross_items') || '{"straightPunch": 3, "splashPunch": 3}');
+        this.items = savedItems;
 
         this.initElements();
         this.addEventListeners();
@@ -107,7 +106,9 @@ class PicrossGame {
         this.btnReset = document.getElementById('btn-reset');
         this.coinCountEl = document.getElementById('coin-count');
         this.btnStraightPunch = document.getElementById('btn-straight-punch');
+        this.btnSplashPunch = document.getElementById('btn-splash-punch');
         this.itemCountEl = document.getElementById('item-count');
+        this.itemCountSplashEl = document.getElementById('item-count-splash');
 
         // Progress
         this.clearedEasyEl = document.getElementById('cleared-easy');
@@ -130,12 +131,14 @@ class PicrossGame {
         this.victoryOverlay = document.getElementById('victory-overlay');
         this.btnNextPuzzle = document.getElementById('btn-next-puzzle');
         this.finishTimeEl = document.getElementById('finish-time');
+        this.rewardArea = document.getElementById('reward-selection-area');
     }
 
     addEventListeners() {
         this.btnRandom.addEventListener('click', () => this.loadRandomPuzzle(this.selectDifficulty.value));
         this.btnReset.addEventListener('click', () => this.resetBoard());
         this.btnStraightPunch.addEventListener('click', () => this.useStraightPunch());
+        this.btnSplashPunch.addEventListener('click', () => this.useSplashPunch());
         this.btnNextPuzzle.addEventListener('click', () => this.loadRandomPuzzle(this.selectDifficulty.value));
         
         // Shop events
@@ -220,6 +223,8 @@ class PicrossGame {
     updateItemDisplay() {
         this.itemCountEl.textContent = this.items.straightPunch;
         this.btnStraightPunch.disabled = this.items.straightPunch <= 0 || this.isCleared;
+        this.itemCountSplashEl.textContent = this.items.splashPunch;
+        this.btnSplashPunch.disabled = this.items.splashPunch <= 0 || this.isCleared;
     }
 
     updateProgressDisplay() {
@@ -235,6 +240,10 @@ class PicrossGame {
         this.totalBossEl.textContent = allKeys.filter(k => k.startsWith('boss')).length;
     }
 
+    saveItems() {
+        localStorage.setItem('picross_items', JSON.stringify(this.items));
+    }
+
     useStraightPunch() {
         if (this.items.straightPunch <= 0 || this.isCleared) return;
         const incompleteCols = [];
@@ -247,8 +256,41 @@ class PicrossGame {
         const targetCol = incompleteCols[Math.floor(Math.random() * incompleteCols.length)];
         for (let r = 0; r < this.size; r++) this.updateCell(r, targetCol, this.solution[r][targetCol] === 1 ? 1 : 2);
         this.items.straightPunch--;
+        this.saveItems();
         this.updateItemDisplay();
         this.messageArea.textContent = "🥊 ストレートパンチ！";
+    }
+
+    useSplashPunch() {
+        if (this.items.splashPunch <= 0 || this.isCleared) return;
+        const incorrectCells = [];
+        for (let r = 0; r < this.size; r++) {
+            for (let c = 0; c < this.size; c++) {
+                if (this.board[r][c] === 0 || (this.board[r][c] === 1 && this.solution[r][c] === 0) || (this.board[r][c] === 2 && this.solution[r][c] === 1)) {
+                    incorrectCells.push({r, c});
+                }
+            }
+        }
+        if (incorrectCells.length === 0) return;
+        const numToReveal = Math.min(5, incorrectCells.length);
+        for (let i = 0; i < numToReveal; i++) {
+            const idx = Math.floor(Math.random() * incorrectCells.length);
+            const {r, c} = incorrectCells.splice(idx, 1)[0];
+            this.updateCell(r, c, this.solution[r][c] === 1 ? 1 : 2);
+        }
+        this.items.splashPunch--;
+        this.saveItems();
+        this.updateItemDisplay();
+        this.messageArea.textContent = "💦 スプラッシュパンチ！";
+    }
+
+    claimReward(itemType) {
+        this.items[itemType]++;
+        this.saveItems();
+        this.updateItemDisplay();
+        this.rewardArea.classList.add('hidden');
+        this.btnNextPuzzle.classList.remove('hidden');
+        this.messageArea.textContent = `🎁 ${itemType === 'straightPunch' ? 'ストレートパンチ' : 'スプラッシュパンチ'}をゲット！`;
     }
 
     initConfetti() {
@@ -308,6 +350,8 @@ class PicrossGame {
         setTimeout(() => this.victoryOverlay.classList.add('hidden'), 500);
         this.stopConfetti();
         this.updateItemDisplay();
+        this.rewardArea.classList.remove('hidden');
+        this.btnNextPuzzle.classList.add('hidden');
         this.startTime = Date.now();
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
@@ -386,7 +430,7 @@ class PicrossGame {
             localStorage.setItem('picross_coins', this.coins.toString());
             this.updateProgressDisplay(); this.checkBossUnlock();
         }
-        this.items.straightPunch++; this.updateItemDisplay();
+        this.updateItemDisplay();
         const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
         this.finishTimeEl.textContent = `クリアタイム: ${Math.floor(elapsed / 60)}分 ${elapsed % 60}秒 (コイン+${reward}!)`;
         this.messageArea.textContent = "🎉 クリア！！";

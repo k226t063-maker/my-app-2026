@@ -29,7 +29,7 @@
                     <div class="coin-display">
                         <span class="coin-icon">💰</span> <span id="coin-count">0</span> コイン
                     </div>
-                    <div class="progress-row" id="progress-boss-row" style="display: none;">
+                    <div class="progress-row" id="progress-boss-row">
                         <span class="progress-label boss-text">魔王:</span>
                         <span class="progress-val"><span id="cleared-boss">0</span> / <span id="total-boss">0</span></span>
                     </div>
@@ -57,7 +57,10 @@
                 <button id="btn-straight-punch" class="item-btn">
                     🥊 ストレートパンチ (<span id="item-count">0</span>)
                 </button>
-                <p class="item-desc">※ランダムな一列の答えを埋めます</p>
+                <button id="btn-splash-punch" class="item-btn">
+                    💦 スプラッシュパンチ (<span id="item-count-splash">0</span>)
+                </button>
+                <p class="item-desc">※ストレート：一列を埋める / スプラッシュ：ランダムな5マスを埋める</p>
             </div>
         </div>
 
@@ -74,10 +77,23 @@
         <div class="victory-content">
             <h2 class="victory-title">CONGRATULATIONS!</h2>
             <p class="victory-message">パズルをクリアしました！</p>
+            
+            <div id="reward-selection-area" class="reward-area">
+                <p class="reward-prompt">クリア特典！好きなアイテムを1つ選んでください：</p>
+                <div class="reward-options">
+                    <button class="reward-btn" onclick="game.claimReward('straightPunch')">
+                        🥊 ストレートパンチ
+                    </button>
+                    <button class="reward-btn" onclick="game.claimReward('splashPunch')">
+                        💦 スプラッシュパンチ
+                    </button>
+                </div>
+            </div>
+
             <div class="victory-stats">
                 <span id="finish-time"></span>
             </div>
-            <button id="btn-next-puzzle">次のパズルへ</button>
+            <button id="btn-next-puzzle" class="hidden">次のパズルへ</button>
         </div>
         <canvas id="confetti-canvas"></canvas>
     </div>
