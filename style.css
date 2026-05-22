@@ -47,12 +47,21 @@ h1 {
     align-items: center;
 }
 
-.game-settings, .play-tools {
+.game-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+}
+
+.setting-item, .play-tools {
     display: flex;
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
 }
 
 select {
@@ -197,13 +206,43 @@ button.active {
     border-bottom: 2px solid #999 !important;
 }
 
-#message-area {
+.item-area {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
     text-align: center;
-    margin-top: 20px;
-    font-size: 1.2rem;
+    width: 100%;
+}
+
+.item-label {
     font-weight: bold;
-    color: var(--primary-color);
-    min-height: 1.5em;
+    font-size: 0.9rem;
+}
+
+.item-btn {
+    background-color: #ff7675;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    margin: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.item-btn:hover:not(:disabled) {
+    background-color: #d63031;
+    transform: translateY(-1px);
+}
+
+.item-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.item-desc {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 5px 0 0 0;
 }
 
 /* Victory Overlay */

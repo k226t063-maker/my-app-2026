@@ -110,9 +110,15 @@ class PicrossGame {
         this.startTime = null;
         this.timerInterval = null;
 
+        // Items
+        this.items = {
+            straightPunch: 3 // Initial bonus
+        };
+
         this.initElements();
         this.addEventListeners();
         this.initConfetti();
+        this.updateItemDisplay();
         this.loadPuzzle("easy-heart");
     }
 
@@ -121,12 +127,18 @@ class PicrossGame {
         this.cluesTop = document.getElementById('clues-top');
         this.cluesLeft = document.getElementById('clues-left');
         this.messageArea = document.getElementById('message-area');
+        this.selectDifficulty = document.getElementById('select-difficulty');
+        this.btnRandom = document.getElementById('btn-random');
         this.selectPuzzle = document.getElementById('select-puzzle');
         this.btnStart = document.getElementById('btn-start');
         this.toolFill = document.getElementById('tool-fill');
         this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
         
+        // Items
+        this.btnStraightPunch = document.getElementById('btn-straight-punch');
+        this.itemCountEl = document.getElementById('item-count');
+
         // Victory elements
         this.victoryOverlay = document.getElementById('victory-overlay');
         this.btnNextPuzzle = document.getElementById('btn-next-puzzle');
@@ -134,12 +146,19 @@ class PicrossGame {
     }
 
     addEventListeners() {
+        this.btnRandom.addEventListener('click', () => {
+            this.loadRandomPuzzle(this.selectDifficulty.value);
+        });
         this.btnStart.addEventListener('click', () => {
             this.loadPuzzle(this.selectPuzzle.value);
         });
         this.toolFill.addEventListener('click', () => this.setTool('fill'));
         this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
+
+        this.btnStraightPunch.addEventListener('click', () => {
+            this.useStraightPunch();
+        });
 
         this.btnNextPuzzle.addEventListener('click', () => {
             this.loadNextPuzzle();
@@ -153,6 +172,54 @@ class PicrossGame {
         this.gridBoard.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+    }
+
+    updateItemDisplay() {
+        this.itemCountEl.textContent = this.items.straightPunch;
+        this.btnStraightPunch.disabled = this.items.straightPunch <= 0 || this.isCleared;
+    }
+
+    useStraightPunch() {
+        if (this.items.straightPunch <= 0 || this.isCleared) return;
+
+        // Find columns that are not fully filled correctly yet
+        const incompleteCols = [];
+        for (let c = 0; c < this.size; c++) {
+            let isCorrect = true;
+            for (let r = 0; r < this.size; r++) {
+                if (this.solution[r][c] === 1 && this.board[r][c] !== 1) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+            if (!isCorrect) {
+                incompleteCols.push(c);
+            }
+        }
+
+        if (incompleteCols.length === 0) return;
+
+        // Pick a random incomplete column
+        const targetCol = incompleteCols[Math.floor(Math.random() * incompleteCols.length)];
+
+        // Fill the column correctly
+        for (let r = 0; r < this.size; r++) {
+            const state = this.solution[r][targetCol] === 1 ? 1 : 2; // Fill or X
+            this.updateCell(r, targetCol, state);
+        }
+
+        this.items.straightPunch--;
+        this.updateItemDisplay();
+        this.messageArea.textContent = "🥊 ストレートパンチ！";
+        setTimeout(() => {
+            if (!this.isCleared) this.updateTimerDisplay();
+        }, 2000);
+    }
+
+    setTool(tool) {
+        this.currentTool = tool;
+        this.toolFill.classList.toggle('active', tool === 'fill');
+        this.toolX.classList.toggle('active', tool === 'x');
     }
 
     initConfetti() {
@@ -221,6 +288,18 @@ class PicrossGame {
         this.isConfettiRunning = false;
     }
 
+    loadRandomPuzzle(difficulty) {
+        let keys = Object.keys(PUZZLE_LIBRARY);
+        if (difficulty !== 'all') {
+            keys = keys.filter(key => key.startsWith(difficulty));
+        }
+        
+        if (keys.length === 0) return;
+        
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        this.loadPuzzle(randomKey);
+    }
+
     loadPuzzle(id) {
         const puzzle = PUZZLE_LIBRARY[id];
         if (!puzzle) return;
@@ -235,6 +314,9 @@ class PicrossGame {
         this.victoryOverlay.classList.remove('show');
         setTimeout(() => this.victoryOverlay.classList.add('hidden'), 500);
         this.stopConfetti();
+
+        // Update item button state
+        this.updateItemDisplay();
 
         // Set select value in case it was loaded programmatically
         this.selectPuzzle.value = id;
@@ -386,12 +468,16 @@ class PicrossGame {
         this.isCleared = true;
         if (this.timerInterval) clearInterval(this.timerInterval);
 
+        // Award item on clear
+        this.items.straightPunch++;
+        this.updateItemDisplay();
+
         const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
         const timeStr = `${mins}分 ${secs}秒`;
         
-        this.finishTimeEl.textContent = `クリアタイム: ${timeStr}`;
+        this.finishTimeEl.textContent = `クリアタイム: ${timeStr} (アイテム+1!)`;
         this.messageArea.textContent = "🎉 クリア！！";
 
         // Add cleared class to cells for animation
