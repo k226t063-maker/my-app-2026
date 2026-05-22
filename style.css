@@ -208,40 +208,29 @@ button.active {
 
 .progress-area {
     background: #e9ecef;
-    padding: 5px 15px;
+    padding: 10px 20px;
     border-radius: 15px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: bold;
     color: #495057;
     margin-top: 5px;
-}
-
-.sound-settings {
     display: flex;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.switch-label {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 5px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
+    min-width: 150px;
 }
 
-.switch-label input {
-    cursor: pointer;
-}
-
-.progress-text {
+.progress-row {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
 }
 
-#cleared-count {
+.progress-label {
+    color: #6c757d;
+}
+
+.progress-val {
     color: var(--primary-color);
 }
 

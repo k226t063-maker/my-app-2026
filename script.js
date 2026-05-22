@@ -117,34 +117,12 @@ class PicrossGame {
             straightPunch: 3 // Initial bonus
         };
 
-        // Audio
-        this.initAudio();
-
         this.initElements();
         this.addEventListeners();
         this.initConfetti();
         this.updateItemDisplay();
         this.updateProgressDisplay();
         this.loadRandomPuzzle("all");
-    }
-
-    initAudio() {
-        // NOTE: The blob URL provided is local to the user's session and may not work directly here.
-        // It's recommended to replace these with permanent public URLs.
-        this.bgmUrl = 'blob:https://www.microsoft365.com/8794f7d6-183b-401a-b288-2edef47cf12f';
-        this.punchSeUrl = 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'; // Generic punch sound
-        
-        this.bgm = new Audio(this.bgmUrl);
-        this.bgm.loop = true;
-        this.bgm.volume = 0.4;
-        
-        this.punchSe = new Audio(this.punchSeUrl);
-        this.punchSe.volume = 0.6;
-
-        this.audioEnabled = {
-            bgm: false,
-            se: true
-        };
     }
 
     initElements() {
@@ -158,17 +136,17 @@ class PicrossGame {
         this.toolX = document.getElementById('tool-x');
         this.btnReset = document.getElementById('btn-reset');
         
-        // Sound controls
-        this.checkBgm = document.getElementById('check-bgm');
-        this.checkSe = document.getElementById('check-se');
-
         // Items
         this.btnStraightPunch = document.getElementById('btn-straight-punch');
         this.itemCountEl = document.getElementById('item-count');
 
         // Progress
-        this.clearedCountEl = document.getElementById('cleared-count');
-        this.totalCountEl = document.getElementById('total-count');
+        this.clearedEasyEl = document.getElementById('cleared-easy');
+        this.totalEasyEl = document.getElementById('total-easy');
+        this.clearedNormalEl = document.getElementById('cleared-normal');
+        this.totalNormalEl = document.getElementById('total-normal');
+        this.clearedHardEl = document.getElementById('cleared-hard');
+        this.totalHardEl = document.getElementById('total-hard');
 
         // Victory elements
         this.victoryOverlay = document.getElementById('victory-overlay');
@@ -179,24 +157,10 @@ class PicrossGame {
     addEventListeners() {
         this.btnRandom.addEventListener('click', () => {
             this.loadRandomPuzzle(this.selectDifficulty.value);
-            this.handleFirstInteraction();
         });
         this.toolFill.addEventListener('click', () => this.setTool('fill'));
         this.toolX.addEventListener('click', () => this.setTool('x'));
         this.btnReset.addEventListener('click', () => this.resetBoard());
-
-        this.checkBgm.addEventListener('change', (e) => {
-            this.audioEnabled.bgm = e.target.checked;
-            if (this.audioEnabled.bgm) {
-                this.bgm.play().catch(err => console.log("BGM play failed:", err));
-            } else {
-                this.bgm.pause();
-            }
-        });
-
-        this.checkSe.addEventListener('change', (e) => {
-            this.audioEnabled.se = e.target.checked;
-        });
 
         this.btnStraightPunch.addEventListener('click', () => {
             this.useStraightPunch();
@@ -216,31 +180,35 @@ class PicrossGame {
         });
     }
 
-    handleFirstInteraction() {
-        // Browsers block auto-playing audio until user interacts
-        if (this.audioEnabled.bgm && this.bgm.paused) {
-            this.bgm.play().catch(() => {});
-        }
-    }
-
     updateItemDisplay() {
         this.itemCountEl.textContent = this.items.straightPunch;
         this.btnStraightPunch.disabled = this.items.straightPunch <= 0 || this.isCleared;
     }
 
     updateProgressDisplay() {
-        this.clearedCountEl.textContent = this.clearedPuzzles.length;
-        this.totalCountEl.textContent = Object.keys(PUZZLE_LIBRARY).length;
+        const allKeys = Object.keys(PUZZLE_LIBRARY);
+        
+        const easyTotal = allKeys.filter(k => k.startsWith('easy')).length;
+        const easyCleared = this.clearedPuzzles.filter(k => k.startsWith('easy')).length;
+        
+        const normalTotal = allKeys.filter(k => k.startsWith('normal')).length;
+        const normalCleared = this.clearedPuzzles.filter(k => k.startsWith('normal')).length;
+        
+        const hardTotal = allKeys.filter(k => k.startsWith('hard')).length;
+        const hardCleared = this.clearedPuzzles.filter(k => k.startsWith('hard')).length;
+
+        this.clearedEasyEl.textContent = easyCleared;
+        this.totalEasyEl.textContent = easyTotal;
+        
+        this.clearedNormalEl.textContent = normalCleared;
+        this.totalNormalEl.textContent = normalTotal;
+        
+        this.clearedHardEl.textContent = hardCleared;
+        this.totalHardEl.textContent = hardTotal;
     }
 
     useStraightPunch() {
         if (this.items.straightPunch <= 0 || this.isCleared) return;
-
-        // Play SE
-        if (this.audioEnabled.se) {
-            this.punchSe.currentTime = 0;
-            this.punchSe.play().catch(() => {});
-        }
 
         const incompleteCols = [];
         for (let c = 0; c < this.size; c++) {
@@ -338,12 +306,20 @@ class PicrossGame {
         }
         
         // Prefer uncleared puzzles
-        const uncleared = keys.filter(k => !this.clearedPuzzles.includes(k));
-        const finalKeys = uncleared.length > 0 ? uncleared : keys;
+        let candidateKeys = keys.filter(k => !this.clearedPuzzles.includes(k));
         
-        if (finalKeys.length === 0) return;
+        // If there are multiple uncleared, avoid picking the current one
+        if (candidateKeys.length > 1) {
+            candidateKeys = candidateKeys.filter(k => k !== this.currentPuzzleId);
+        }
         
-        const randomKey = finalKeys[Math.floor(Math.random() * finalKeys.length)];
+        // If all are cleared, pick from all keys but avoid the current one
+        if (candidateKeys.length === 0) {
+            candidateKeys = keys.filter(k => k !== this.currentPuzzleId);
+            if (candidateKeys.length === 0) candidateKeys = keys; // Only one puzzle total
+        }
+        
+        const randomKey = candidateKeys[Math.floor(Math.random() * candidateKeys.length)];
         this.loadPuzzle(randomKey);
     }
 
@@ -356,7 +332,9 @@ class PicrossGame {
         this.solution = puzzle.data;
         this.board = Array(this.size).fill().map(() => Array(this.size).fill(0));
         this.isCleared = false;
-        this.messageArea.textContent = "";
+        
+        const isNew = !this.clearedPuzzles.includes(id);
+        this.messageArea.textContent = isNew ? "🆕 未クリアの問題" : "✅ クリア済みの問題";
         
         this.victoryOverlay.classList.remove('show');
         setTimeout(() => this.victoryOverlay.classList.add('hidden'), 500);
@@ -365,7 +343,7 @@ class PicrossGame {
 
         this.startTime = Date.now();
         if (this.timerInterval) clearInterval(this.timerInterval);
-        this.updateTimerDisplay();
+        // We don't call updateTimerDisplay immediately to keep the "New/Cleared" message for a moment
         this.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
 
         this.render();

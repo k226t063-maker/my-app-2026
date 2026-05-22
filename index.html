@@ -24,16 +24,18 @@
                 </div>
                 
                 <div class="progress-area">
-                    <span class="progress-text">クリア状況: <span id="cleared-count">0</span> / <span id="total-count">0</span></span>
-                </div>
-
-                <div class="sound-settings">
-                    <label class="switch-label">
-                        <input type="checkbox" id="check-bgm"> BGM
-                    </label>
-                    <label class="switch-label">
-                        <input type="checkbox" id="check-se" checked> SE
-                    </label>
+                    <div class="progress-row">
+                        <span class="progress-label">初級:</span>
+                        <span class="progress-val"><span id="cleared-easy">0</span> / <span id="total-easy">0</span></span>
+                    </div>
+                    <div class="progress-row">
+                        <span class="progress-label">中級:</span>
+                        <span class="progress-val"><span id="cleared-normal">0</span> / <span id="total-normal">0</span></span>
+                    </div>
+                    <div class="progress-row">
+                        <span class="progress-label">上級:</span>
+                        <span class="progress-val"><span id="cleared-hard">0</span> / <span id="total-hard">0</span></span>
+                    </div>
                 </div>
             </div>
 
